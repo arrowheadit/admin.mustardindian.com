@@ -30,7 +30,7 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         protocol: ${{ secrets.FTP_PROTOCOL }}
         server-dir: ${{ secrets.FTP_DIRECTORY }} # e.g. /public_html
-        local-dir: build
+        local-dir: build/
         exclude: |
           **/.git*
           **/node_modules/**
