@@ -3,6 +3,7 @@ name: Production Deploy
 on:
   push:
     branches: [ main ]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,32 +16,21 @@ jobs:
       with:
         node-version: '22.x'
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
-
-    - name: Install Composer Dependencies
-      run: composer install --prefer-dist --no-progress --no-suggest
-
-    - name: npm install
+    - name: 📦 Install Dependencies
       run: npm install --force
 
-    - name: npm run bundle
+    - name: 🏗️ Build Project
       run: npm run build
 
-    - name: 📂 Sync files
+    - name: 📂 Deploy via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        protocol: ${{ secrets.FTP_PROTOCOL}}
-        server-dir: ${{ secrets.FTP_DIRECTORY }} # defaults to '/public_html'
+        protocol: ${{ secrets.FTP_PROTOCOL }}
+        server-dir: ${{ secrets.FTP_DIRECTORY }} # e.g. /public_html
+        local-dir: build
         exclude: |
           **/.git*
-          **/.git*/**
-          **/storage/**
-          **/public/storage/**
-          **/public/uploads/**
           **/node_modules/**
