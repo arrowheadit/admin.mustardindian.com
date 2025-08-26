@@ -30,6 +30,10 @@ export type PageSection = {
   content_contents?: PageSectionContent[];
   has_list?: boolean;
   has_content?: boolean;
+  hide_element?: {
+    form_hide?: string[];
+    list_hide?: string[];
+  };
 };
 export type PageSectionContent = {
   id?: number;
@@ -46,8 +50,12 @@ export type PageSectionContent = {
   img_height?: string;
   img_instruction?: string;
   content?: string;
+  hide_element?: {
+    form_hide?: string[];
+    list_hide?: string[];
+  };
 };
-export type PageSectionNewContent = {
+export type PageSectionNewContent = { 
   id?: number;
   section: string;
   section_type: "content" | "list";

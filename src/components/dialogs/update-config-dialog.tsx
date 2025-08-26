@@ -8,6 +8,7 @@ import { Dialog, DialogClose, DialogOverlay, DialogTitle } from "@/components/ui
 import type { ConfigItem } from "@/types/configs";
 import { Switch } from "@/components/ui/switch";
 import TextareaAutosize from "react-textarea-autosize"
+import {Save}  from "lucide-react";
 export default function UpdateConfigDialog({
   dialogController,
   editAbleConfig,
@@ -142,7 +143,7 @@ const [errors, setErrors] = useState<Partial<Record<keyof ConfigItem, string>>>(
             </Button>
             <Button type="submit" disabled={isCreating || isUpdating}>
               {isCreating || isUpdating && <LoaderCircle className="animate-spin"/>}
-              {editAbleConfig ? "Update" : "Create"}
+              <Save /> {editAbleConfig ? "Update" : "Create"}
             </Button>
           </div>
         </form>

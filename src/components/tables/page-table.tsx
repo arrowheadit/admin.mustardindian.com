@@ -24,10 +24,10 @@ export default function PageTable() {
     const sort_type = "desc";
     const navigate = useNavigate();    
     const handleEditPageSection = (page: PageItem) => {
-        navigate(`/settings/pages/edit-page-section/${page.slug}`, { state:  page });
+        navigate(`/pages/edit-page-section/${page.slug}`, { state:  page });
     };
     const handleSeoSetup = (page: PageItem) => {
-        navigate(`/settings/pages/seo-setup/${page.slug}`, { state:  page });
+        navigate(`/pages/seo-setup/${page.slug}`, { state:  page });
     };
   
     const { data: pages,isPending } = usePageQuery({ page, page_size, sort_by, sort_type ,search});

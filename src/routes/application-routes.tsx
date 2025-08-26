@@ -1,10 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthenticatedOnly, GuestsOnly } from "./middleware";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
-import { Home, Login ,Page,EditPageSection,Configs} from "@/pages";
+import { Home, Login ,Page,EditPageSection,Configs,Offers,Gallery} from "@/pages";
 import { useAuth } from "@/context/hooks";
 import { useEffect, useState } from "react";
-
 
 export default function ApplicationRoutes() {
     const { isAuthenticated } = useAuth();
@@ -27,16 +26,15 @@ export default function ApplicationRoutes() {
                     {/* Protected Routes Group */}
                     <Route element={<AuthenticatedOnly isAuthenticated={isAuthenticated} />}>
                         <Route element={<DashboardLayout />}>
-                            <Route path="/" element={<Home />} />   
-                            <Route path="/settings">
-                                <Route path="pages" element={<Page />} /> 
-                                <Route path="configs" element={<Configs />} /> 
+                            <Route path="/" element={<Home />} /> 
+                            <Route path="pages" element={<Page />} /> 
+                            <Route path="configs" element={<Configs />} /> 
+                            <Route path="offers" element={<Offers />} />
+                            <Route path="gallery" element={<Gallery />} />
                                 <Route path="pages/edit-page-section/:slug" element={<EditPageSection />} />
                                 
                                 {/* <Route path="pages/edit-page-section/:slug" element={<EditPageSection />} />
                                 <Route path="pages/seo-setup/:slug" element={<SeoSetup />} /> */}
-                               
-                            </Route>
                         </Route>
                     </Route>
                 </Routes>

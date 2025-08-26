@@ -11,6 +11,8 @@ import ImageCard from "../image/image-card";
 import { useUpdatePageSectionMutation } from "@/mutations";
 import { toast } from "sonner";
 import type { FileItem } from "@/types/file-manager";
+import {Save}  from "lucide-react";
+
 import {
   Form,
   FormControl,
@@ -27,9 +29,9 @@ const formSchema = z.object({
   sub_title: z.nullable(z.string().min(2, { message: "Sub Title must be at least 2 characters." })),
   img_src: z.nullable(z.string().min(2, { message: "Image Src must be at least 2 characters." })),
   img_alt: z.nullable(z.string().min(2, { message: "Image Alt must be at least 2 characters." })),
-  img_width: z.nullable(z.string()),
-  img_height: z.nullable(z.string()),
-  img_instruction: z.nullable(z.string().min(2, { message: "Image Instruction must be at least 2 characters." })),  
+  // img_width: z.nullable(z.string()),
+  // img_height: z.nullable(z.string()),
+  // img_instruction: z.nullable(z.string().min(2, { message: "Image Instruction must be at least 2 characters." })),  
 });
 export type FormSchemaType = z.infer<typeof formSchema>;
 
@@ -72,13 +74,13 @@ const { mutateAsync: updatePageSection, isPending: isUpdating } = useUpdatePageS
   useEffect(() => {
     if (isEditMode) {  
       console.log("selectedSectionData in AddEditPageSection...", selectedSectionData);  
-      form.setValue("img_instruction", selectedSectionData?.img_instruction ?? "");
+      // form.setValue("img_instruction", selectedSectionData?.img_instruction ?? "");
       form.setValue("title", selectedSectionData?.title ?? "");
       form.setValue("sub_title", selectedSectionData?.sub_title ?? "");
       form.setValue("img_src", selectedSectionData?.img_src ?? "");   
       form.setValue("img_alt", selectedSectionData?.img_alt ?? "");   
-      form.setValue("img_width", String(selectedSectionData?.img_width ?? ""));   
-      form.setValue("img_height", String(selectedSectionData?.img_height ?? "")); 
+      // form.setValue("img_width", String(selectedSectionData?.img_width ?? ""));   
+      // form.setValue("img_height", String(selectedSectionData?.img_height ?? "")); 
       if (selectedSectionData.img_src) {        
         setSectionImage([{ name: selectedSectionData.img_src.split('/').pop() ?? '', path: selectedSectionData.img_src, url: import.meta.env.VITE_FILE_MANAGER_IMAGE_PATH + selectedSectionData.img_src }])
       }
@@ -92,9 +94,9 @@ const form = useForm<z.infer<typeof formSchema>>({
     sub_title: "",
     img_src: "",
     img_alt: "",
-    img_width: "",
-    img_height: "",
-    img_instruction: "",
+    // img_width: "",
+    // img_height: "",
+    // img_instruction: "",
   },
 });
 
@@ -116,13 +118,13 @@ const handleFormSubmit = (data: FormData) => {
       onSuccess: (data) => {
         if (data.data?.message) {
           toast.success(data.data?.message);                
-          form.setValue("img_instruction", "");
+          // form.setValue("img_instruction", "");
           form.setValue("title", "");
           form.setValue("sub_title", "");
           form.setValue("img_src", "");
           form.setValue("img_alt", "");
-          form.setValue("img_width", "");
-          form.setValue("img_height", "");
+          // form.setValue("img_width", "");
+          // form.setValue("img_height", "");
         }
       },
       onError: (error) => {
@@ -144,7 +146,7 @@ const handleFormSubmit = (data: FormData) => {
           control={form.control}
           name="title"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className={!selectedSectionData?.title ? "!hidden" : ""}>
               <FormLabel>Title</FormLabel>
               <FormControl>
                 <Input placeholder="Title" {...field} value={field.value ?? ""} />
@@ -157,7 +159,7 @@ const handleFormSubmit = (data: FormData) => {
           control={form.control}
           name="sub_title"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className={!selectedSectionData?.sub_title ? "!hidden" : ""}>
               <FormLabel>Sub Title</FormLabel>
               <FormControl>
                 <Input placeholder="Sub Title" {...field} value={field.value ?? ""} />
@@ -170,8 +172,8 @@ const handleFormSubmit = (data: FormData) => {
           control={form.control}
           name="img_src"
           render={() => (
-            <FormItem>
-              <FormLabel>Image</FormLabel>
+            <FormItem className={!selectedSectionData?.img_src ? "!hidden" : ""}>
+              <FormLabel>Image <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 inset-ring inset-ring-yellow-600/20">Instruction: {selectedSectionData?.img_instruction}</span></FormLabel>
               <FormControl>
                 <ImageCard
                   value={sectionImage}
@@ -189,7 +191,7 @@ const handleFormSubmit = (data: FormData) => {
           control={form.control}
           name="img_alt"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className={!selectedSectionData?.img_src ? "!hidden" : ""}>
               <FormLabel>Image Alt</FormLabel>
               <FormControl>
                 <Input placeholder="Image Alt" {...field} value={field.value ?? ""} />
@@ -198,11 +200,11 @@ const handleFormSubmit = (data: FormData) => {
             </FormItem>
           )}
           />
-          <FormField
+          {/* <FormField
           control={form.control}
           name="img_width"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className={!selectedSectionData?.img_src ? "!hidden" : ""}>
               <FormLabel>Image Width</FormLabel>
               <FormControl>
                 <Input placeholder="Image Width" {...field} value={field.value ?? ""} />
@@ -215,7 +217,7 @@ const handleFormSubmit = (data: FormData) => {
           control={form.control}
           name="img_height"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className={!selectedSectionData?.img_src ? "!hidden" : ""}>
               <FormLabel>Image Height</FormLabel>
               <FormControl>
                 <Input placeholder="Image Height" {...field} value={field.value ?? ""} />
@@ -228,7 +230,7 @@ const handleFormSubmit = (data: FormData) => {
           control={form.control}
           name="img_instruction"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className={!selectedSectionData?.img_src ? "!hidden" : ""}>
               <FormLabel>Image Instruction</FormLabel>
               <FormControl>
                 <Input placeholder="Image Instruction" {...field} value={field.value ?? ""} />
@@ -236,8 +238,8 @@ const handleFormSubmit = (data: FormData) => {
               <FormMessage />
             </FormItem>
           )}
-          />          
-        <Button type="submit" disabled={isUpdating}>Submit</Button>
+          />           */}
+        <Button type="submit" disabled={isUpdating}><Save /> Submit</Button>
       </form>
     </Form>
     </Card>

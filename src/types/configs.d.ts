@@ -5,4 +5,9 @@ export type ConfigItem = {
         value: string,
         suggestion?: string,
         status: "active" | "inactive";
-    }
+}
+    
+export interface ControlListElement {
+    form_hide?: string[];
+    list_hide?: string[];
+}

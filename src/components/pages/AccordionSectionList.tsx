@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
-import {  useQueryClient } from '@tanstack/react-query'
-import { Card } from "../ui/card";
+import { useQueryClient } from '@tanstack/react-query'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {Save}  from "lucide-react";
+import { Card,
+        // CardAction,
+        // CardContent,
+        // CardDescription,
+        // CardFooter,
+        // CardHeader,
+        CardTitle,
+} from "../ui/card";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Input } from "../ui/input";
@@ -9,12 +18,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { useLocation } from "react-router-dom";
 import type { PageSectionContent } from "@/types/pages";
 import ImageCard from "../image/image-card";
-import { useCreateListContentMutation,useUpdateListContentMutation,useDeleteListContentMutation } from "@/mutations";
+import { useCreateListContentMutation, useUpdateListContentMutation, useDeleteListContentMutation } from "@/mutations";
+import { useControlListElementsQuery } from "@/queris";
 import { toast } from "sonner";
 import type { FileItem } from "@/types/file-manager";
 import ConfirmDeleteDialog from "@/components/dialogs/pop-confirm-dialog";
 import { Trash2, Loader2 } from "lucide-react";
-
+// import type { ControlListElement } from "@/types/configs";
+import { useConfigArrayQuery } from "@/queris";
 import {
   Form,
   FormControl,
@@ -24,7 +35,12 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 type Props = {
+  hideElement?:  {
+    form_hide?: string[];
+    list_hide?: string[];
+  };
   isNewSection?: boolean;
+  sectionName?: string;
   selectedSectionData?: PageSectionContent[];
   sectionId?: number;
 }
@@ -36,12 +52,11 @@ const formSchema = z.object({
   sub_title: z.string(),
   link: z.string(),
   img_src: z.string(),
-  img_alt: z.string(),
-  img_width: z.string(),
-  img_height: z.string(),
-  img_instruction: z.string(),
+  img_alt: z.string(), 
   content: z.string(),
 });
+
+// type ControlListElements = Record<string, ControlListElement>;
 export type FormSchemaType = z.infer<typeof formSchema>;
 export function AccordionSectionList(Props: Props) { 
   const location = useLocation();
@@ -49,12 +64,15 @@ export function AccordionSectionList(Props: Props) {
   console.log("Props in AccordionSectionList:", Props);
   // const isEditMode = !!selectedSectionData; 
   const [pageId, setPageId] = useState<number>(Props.selectedSectionData && Props.selectedSectionData.length > 0 ? Props.selectedSectionData[0].page_id ?? 0 : 0);
+  
   const [itemId, setItemId] = useState<number>(0);
   const queryClient = useQueryClient();
-
+  console.log('section name: ',Props.sectionName);
+  const [selectedHideElements, setSelectedHideElements] = useState<string[]>([]);
   useEffect(() => {
     if (pageData) {
-      try {
+      try {        
+        setSelectedHideElements(Props?.hideElement?.form_hide ?? []) ;
         console.log('pageData in AddEditPageSection...', pageData);
         setPageId(pageData.id);
       } catch {
@@ -62,10 +80,12 @@ export function AccordionSectionList(Props: Props) {
       }
     }
   }, [pageData]);
-
+ const { data: configs } = useConfigArrayQuery();
   const { mutateAsync: createPageSection, isPending: isCreating } = useCreateListContentMutation();
   const { mutateAsync: updatePageSection, isPending: isUpdating } = useUpdateListContentMutation();
   const { mutateAsync: deletePageSectionItem, isPending: isDeleting } = useDeleteListContentMutation();
+  const { data: cListElement } = useControlListElementsQuery();
+  console.log('Control List Element...', cListElement,Props.isNewSection,Props);
   const [sectionImage, setSectionImage] = useState<Array<Pick<FileItem, 'name' | 'path' | 'url'>>>([]); 
   useEffect(
     () => {
@@ -81,12 +101,9 @@ export function AccordionSectionList(Props: Props) {
     defaultValues: {
       title: "",
       sub_title: "",
-      link: "",
+      link: configs?.data.link??"",
       img_src: "",
-      img_alt: "",
-      img_width: "",
-      img_height: "",
-      img_instruction: "",
+      img_alt: "",    
       content: "",
     },
  })
@@ -168,26 +185,28 @@ export function AccordionSectionList(Props: Props) {
   };
 
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+  const [selectedCardTitle, setSelectedCardTitle] = useState<string>("");
+  
   const handleListItemClick = (item: PageSectionContent) => {
    setCrudStatus("Updating");
-    console.log("Clicked on item:", item);
+    // console.log("Clicked on item:", item?.hide_element?.form_hide, item);
+    // setSelectedHideElements(item?.hide_element?.form_hide??[]);
+    
     form.setValue("title", item.title ?? "");
     form.setValue("sub_title", item.sub_title ?? "");
     form.setValue("link", item.link ?? "");
     form.setValue("img_src", item.img_src ?? "");
-    form.setValue("img_alt", item.img_alt ?? "");
-    form.setValue("img_width", String(item.img_width ?? ""));
-    form.setValue("img_height", String(item.img_height ?? ""));
-   form.setValue("img_instruction", item.img_instruction ?? "");
+    form.setValue("img_alt", item.img_alt ?? ""); 
    form.setValue("content", item.content ?? "");
    setSelectedCardId(item.id??0);
+   setSelectedCardTitle(item.title??"");
   //  setSelectedItem(item.content);
   // setResetKey(prev => prev + 1);
   //  const [editorContent, setEditorContent] = useInputEditorState(
   //    selectedSectionData?.content ?? "",handleContentChange
   //  );
      
-
+    console.log("hide elements...",selectedHideElements);
    
   //  handleContentChange(item.content ?? "");
   //  setEditorContent(item.content ?? "");
@@ -199,213 +218,169 @@ export function AccordionSectionList(Props: Props) {
   };  
 const imgAltValue = form.watch("img_alt");
   return (
-    <>
-      <div className="text-center  p-1 ms-auto w-1/3 bg-amber-500 text-2xl font-bold text-white"> {crudStatus==="New" ? "Creating New List" : "Updating List"} </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div className="col-span-1 md:col-span-2">
-         <Card className="p-6">     
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8"> 
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Title
-                      {/* <Badge variant={crudStatus === "New" ? "default" : "destructive"} className="p-1 ms-2">
-                        {crudStatus}
-                      </Badge> */}
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="Title" {...field} />
-                    </FormControl>
-                    {/* <FormDescription>
-                      This is Section Title.
-                    </FormDescription> */}
-                    <FormMessage />
-                  </FormItem>
-                )}
+    <>      
+      <div className="flex flex-row justify-between gap-3">
+        <div className="w-[60%]">
+            <Card className="p-3"> 
+              <CardTitle className="border-b-2 pb-3 text-amber-500 ">{selectedCardId?"Update "+selectedCardTitle: "New Entry"}</CardTitle> 
+            
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8"> 
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem className={selectedHideElements?.includes("title") ? "hidden" : ""}>
+                      <FormLabel>
+                        Title                     
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Title" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                  />
+                  <FormField
+                  control={form.control}
+                  name="sub_title"
+                  render={({ field }) => (
+                    <FormItem className={selectedHideElements?.includes("sub_title") ? "hidden" : ""}>
+                      <FormLabel>Sub Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Sub Title" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                  />
+                  <FormField
+                  control={form.control}
+                  name="link"
+                  render={({ field }) => (
+                    <FormItem className={selectedHideElements?.includes("link") ? "hidden" : ""}>
+                      <FormLabel>Link</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Link" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
                 <FormField
-                control={form.control}
-                name="sub_title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sub Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Sub Title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                  control={form.control}
+                  name="img_src"
+                  render={() => (
+                    <FormItem className={`${selectedHideElements?.includes("image") ? "hidden" : ""}`}>
+                      <FormLabel>Image <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 inset-ring inset-ring-yellow-600/20">Instruction: {Props.sectionName ? configs?.data?.images?.[Props.sectionName]?.instruction:""}</span></FormLabel>
+                      <FormControl>
+                        <ImageCard
+                          value={sectionImage}
+                          onChange={setSectionImage}
+                          imageAlt={imgAltValue || ""}
+                          onAltChange={(val) => form.setValue("img_alt", val)}
+                          parent="page"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
                 <FormField
-                control={form.control}
-                name="link"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Link</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Link" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-                />
-                <FormField
-                control={form.control}
-                name="img_src"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Image</FormLabel>
-                    <FormControl>
-                      <ImageCard
-                        value={sectionImage}
-                        onChange={setSectionImage}
-                        imageAlt={imgAltValue || ""}
-                        onAltChange={(val) => form.setValue("img_alt", val)}
-                        parent="page"
+                    control={form.control}
+                    name="img_alt"
+                    render={({ field }) => (
+                      <FormItem className={`mt-3 ${selectedHideElements?.includes("image") ? "hidden" : ""}`}>
+                        <FormLabel>Image Alt</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Image Alt" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />                
+                  <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem className={selectedHideElements?.includes("content") ? "hidden" : ""}>
+                      <FormLabel>Content</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Content" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                  />
+                  
+                <Button type="submit" disabled={isUpdating || isCreating}><Save /> Submit</Button>
+              </form>
+              </Form>
+            </Card>
+        </div>
+        <div className="w-[40%]">
+          <h2 className="text-lg mb-2 text-center font-bold">Section List</h2>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-center">Title</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Props.selectedSectionData?.map((item: PageSectionContent) => (
+                  <TableRow 
+                    key={item.id}
+                    className={`cursor-pointer ${
+                      selectedCardId === item.id ? "bg-blue-50" : ""
+                    }`}
+                    onClick={() => handleListItemClick(item)}
+                  >
+                    <TableCell 
+                      className={` text-center font-medium cursor-pointer ${selectedCardId === item.id ? "bg-amber-200" : ""
+                        }`}>{item.title}</TableCell>
+                    <TableCell className={` text-center cursor-pointer ${selectedCardId === item.id ? "bg-amber-200" : ""
+                        }`}>
+                      <ConfirmDeleteDialog
+                        title="Are you sure?"
+                        description="You want to delete this Section Item?"
+                        triggerButton={
+                          <Button variant="destructive" size="sm" className="ml-2">
+                            <Trash2 />
+                          </Button>
+                        }
+                        confirmButton={
+                          <Button
+                            variant="destructive"
+                            onClick={() => {
+                              if (typeof item.id === "number") {
+                                toast.promise(
+                                  deletePageSectionItem(item.id),
+                                  {
+                                    loading: "Deleting Section Item...",
+                                    success: "Section Item deleted successfully!",
+                                    error: "Error deleting Section Item.",
+                                  }
+                                )
+                              } else {
+                                toast.error("Invalid Section Item ID.");
+                              }
+                            }}
+                            disabled={isDeleting}
+                          >
+                            {isDeleting && <Loader2 className="animate-spin" />}
+                            {isDeleting ? "Loading..." : "Delete"}
+                          </Button>
+                        }
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-                />
-                <FormField
-                control={form.control}
-                name="img_alt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image Alt</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Image Alt" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-                />
-                <FormField
-                control={form.control}
-                name="img_width"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image Width</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Image Width" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-                />
-                <FormField
-                control={form.control}
-                name="img_height"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image Height</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Image Height" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-                />
-                <FormField
-                control={form.control}
-                name="img_instruction"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image Instruction</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Image Instruction" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-                />
-                <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Content</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Content" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-                />
-                
-              <Button type="submit" disabled={isUpdating || isCreating}>Submit</Button>
-            </form>
-            </Form>
-          </Card>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+         
+        </div>
       </div>
-      <div className="col-span-1 md:col-span-1">
-        <h2 className="text-lg mb-2 text-center font-bold">Section List</h2>
-        {Props.selectedSectionData && Props.selectedSectionData.map((item: PageSectionContent) => (
-          <Card key={item.id} className={`mb-4 p-4 cursor-pointer border 
-          ${selectedCardId === item.id
-            ? "border-blue-500 bg-blue-50"
-            : "border-gray-300"
-          }`} onClick={() => {
-            handleListItemClick(item);
-            }}>
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-semibold text-center">{item.title}</h4>
-               <ConfirmDeleteDialog
-        title="Are you sure?"
-        description="You want to delete this Section Item?"
-        triggerButton={
-          <Button variant="destructive" size="sm" className="ml-2">
-            <Trash2 />
-          </Button>
-        }
-        confirmButton={
-          <Button 
-            variant="destructive"
-            onClick={() => {
-              if (typeof item.id === "number") {
-                toast.promise(
-                  deletePageSectionItem(item.id),
-                  {
-                    loading: "Deleting Section Item...",
-                    success: "Section Item deleted successfully!",
-                    error: "Error deleting Section Item.",
-                  }
-                )
-              } else {
-                toast.error("Invalid Section Item ID.");
-              }
-            }}
-            disabled={isDeleting}
-          >
-            {isDeleting && <Loader2 className="animate-spin"/>}
-            {isDeleting ? "Loading..." : "Delete"}
-          </Button>
-        }
-      />
-              {/* <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="cursor-pointer"
-                  onClick={() => removeSingleItem(item.id)}                  
-                >
-                  <X className="h-4 w-4" />
-                </Button> */}
-            </div>
-            
-            {/* <p className="text-sm">{item.sub_title}</p> */}
-            <img src={import.meta.env.VITE_FILE_MANAGER_IMAGE_PATH + item.img_src} alt={item.img_alt} className="w-[100px] h-[100px] block mx-auto" />
-            
-          </Card>
-        ))}
-      </div>
-    </div>
-     
     </>
     
   );

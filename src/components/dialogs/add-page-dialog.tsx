@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Dialog, DialogClose, DialogOverlay, DialogTitle } from "@/components/ui/dialog";
 import type { PageItem,CreatePageItem } from "@/types/pages";
 import { Switch } from "@/components/ui/switch";
+import {Save}  from "lucide-react";
 export default function AddPageDialog({
   dialogController,
   editAblePage,
@@ -134,7 +135,7 @@ const [errors, setErrors] = useState<Partial<Record<keyof CreatePageItem, string
             </Button>
             <Button type="submit" disabled={isCreating || isUpdating}>
               {isCreating || isUpdating && <LoaderCircle className="animate-spin"/>}
-              {editAblePage ? "Update" : "Create"}
+              <Save /> {editAblePage ? "Update" : "Create"}
             </Button>
           </div>
         </form>

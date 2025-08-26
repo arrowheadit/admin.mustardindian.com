@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import type { FileItem } from "@/types/file-manager";
 import ReachTextEditor from "@/components/editor/reach-text-editor";
 import { useInputEditorState } from "@/hooks/useInputEditorState";
-
+import {Save}  from "lucide-react";
 import {
   Form,
   FormControl,
@@ -30,10 +30,7 @@ const formSchema = z.object({
   title: z.nullable(z.string()),
   sub_title: z.nullable(z.string()),
   img_src: z.nullable(z.string()),
-  img_alt: z.nullable(z.string()),
-  img_width: z.nullable(z.string()),
-  img_height: z.nullable(z.string()),
-  img_instruction: z.string().nullish(), 
+  img_alt: z.nullable(z.string()),  
   content: z.string().nullish(),
 });
 export type FormSchemaType = z.infer<typeof formSchema>;
@@ -82,14 +79,11 @@ const { mutateAsync: updatePageSection, isPending: isUpdating } = useUpdatePageS
     }, [sectionImage]);
   useEffect(() => {
     if (isEditMode) {  
-      console.log("selectedSectionData in AddEditPageSection...", selectedSectionData);     
-      form.setValue("img_instruction", selectedSectionData?.img_instruction ?? "");
+      console.log("selectedSectionData in AddEditPageSection...", selectedSectionData);  
       form.setValue("title", selectedSectionData?.title ?? "");
       form.setValue("sub_title", selectedSectionData?.sub_title ?? "");
       form.setValue("img_src", selectedSectionData?.img_src ?? "");   
-      form.setValue("img_alt", selectedSectionData?.img_alt ?? "");   
-      form.setValue("img_width", String(selectedSectionData?.img_width ?? ""));   
-      form.setValue("img_height", String(selectedSectionData?.img_height ?? ""));   
+      form.setValue("img_alt", selectedSectionData?.img_alt ?? ""); 
       form.setValue("content", selectedSectionData?.content ?? "");      
       if (selectedSectionData.img_src) {        
         setSectionImage([{ name: selectedSectionData.img_src.split('/').pop() ?? '', path: selectedSectionData.img_src, url: import.meta.env.VITE_FILE_MANAGER_IMAGE_PATH + selectedSectionData.img_src }])
@@ -103,9 +97,6 @@ const { mutateAsync: updatePageSection, isPending: isUpdating } = useUpdatePageS
       sub_title: "",
       img_src: "",
       img_alt: "",
-      img_width: "",
-      img_height: "",
-      img_instruction: "",
       content: "",
     },
  })
@@ -184,7 +175,7 @@ const handleFormSubmit = (data: FormData) => {
           control={form.control}
           name="title"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className={!selectedSectionData?.title ? "!hidden" : ""}>
               <FormLabel>Title</FormLabel>
               <FormControl>
                 <Input placeholder="Title" {...field} value={field.value ?? ""} />
@@ -200,7 +191,7 @@ const handleFormSubmit = (data: FormData) => {
           control={form.control}
           name="sub_title"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className={!selectedSectionData?.sub_title ? "!hidden" : ""}>
               <FormLabel>Sub Title</FormLabel>
               <FormControl>
                 <Input placeholder="Sub Title" {...field} value={field.value ?? ""} />
@@ -212,34 +203,36 @@ const handleFormSubmit = (data: FormData) => {
             </FormItem>
           )}
           />
-          <FormField
-          control={form.control}
-          name="img_src"
-          render={() => (
-            <FormItem>
-              <FormLabel>Image</FormLabel>
-              <FormControl>
-                {/* <Input placeholder="Image" {...field} /> */}
-                <ImageCard
-                  value={sectionImage}
-                  onChange={setSectionImage}
-                  imageAlt={imgAltValue || ""}
-                  onAltChange={(val) => form.setValue("img_alt", val)}
-                  parent="page"
-                />
-              </FormControl>
-              {/* <FormDescription>
+          {/* {selectedSectionData?.img_src ?  */}
+            <FormField
+              control={form.control}
+              name="img_src"
+              render={() => (
+                <FormItem className={!selectedSectionData?.img_src ? "!hidden" : ""}>
+                  <FormLabel>Images<span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 inset-ring inset-ring-yellow-600/20">Instruction: {selectedSectionData?.img_instruction}</span></FormLabel>
+                  <FormControl>
+                    {/* <Input placeholder="Image" {...field} /> */}
+                    <ImageCard
+                      value={sectionImage}
+                      onChange={setSectionImage}
+                      imageAlt={imgAltValue || ""}
+                      onAltChange={(val) => form.setValue("img_alt", val)}
+                      parent="page"
+                    />
+                  </FormControl>
+                  {/* <FormDescription>
                 This is Section Image.
               </FormDescription> */}
-              <FormMessage />
-            </FormItem>
-          )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          {/* :null} */}
           <FormField
           control={form.control}
           name="img_alt"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className={!selectedSectionData?.img_src ? "!hidden" : ""}>
               <FormLabel>Image Alt</FormLabel>
               <FormControl>
                 <Input placeholder="Image Alt" {...field} value={field.value ?? ""} />
@@ -251,59 +244,13 @@ const handleFormSubmit = (data: FormData) => {
             </FormItem>
           )}
           />
-          <FormField
-          control={form.control}
-          name="img_width"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Image Width</FormLabel>
-              <FormControl>
-                <Input placeholder="Image Width" {...field} value={field.value ?? ""} />
-              </FormControl>
-              {/* <FormDescription>
-                This is Section Image Width.
-              </FormDescription> */}
-              <FormMessage />
-            </FormItem>
-          )}
-          />
-          <FormField
-          control={form.control}
-          name="img_height"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Image Height</FormLabel>
-              <FormControl>
-                <Input placeholder="Image Height" {...field} value={field.value ?? ""} />
-              </FormControl>
-              {/* <FormDescription>
-                This is Section Image Height.
-              </FormDescription> */}
-              <FormMessage />
-            </FormItem>
-          )}
-          />
-          <FormField
-          control={form.control}
-          name="img_instruction"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Image Instruction</FormLabel>
-              <FormControl>
-                 <Input placeholder="Image Height" {...field} value={field.value ?? ""} />
-              </FormControl>
-              {/* <FormDescription>
-                This is Section Image Instruction.
-              </FormDescription> */}
-              <FormMessage />
-            </FormItem>
-          )}
-          />
+          
+          
           <FormField
           control={form.control}
           name="content"
           render={() => (
-            <FormItem>
+            <FormItem className={!selectedSectionData?.content ? "!hidden" : ""}>
               <FormLabel>Content</FormLabel>
               <FormControl>
                 {/* <Input placeholder="Content" {...field} /> */}
@@ -316,7 +263,7 @@ const handleFormSubmit = (data: FormData) => {
             </FormItem>
           )}
           />
-        <Button type="submit" disabled={isUpdating}>Submit</Button>
+        <Button type="submit" disabled={isUpdating}><Save /> Submit</Button>
       </form>
     </Form>
     </Card>

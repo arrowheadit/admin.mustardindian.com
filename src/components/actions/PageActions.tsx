@@ -39,7 +39,7 @@ const PageActions: React.FC<PageActionsProps> = ({
       <DropdownMenuContent align="end">
         {pageSource != "page_table" &&
           <DropdownMenuItem asChild>          
-           <a href="/settings/pages">
+           <a href="/pages">
             <List />
             Page List
           </a>

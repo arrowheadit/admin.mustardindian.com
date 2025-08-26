@@ -10,6 +10,8 @@ import Pagination from "@/components/tables/pagination";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import type { PageSection } from "@/types/pages";
+import {Forward} from "lucide-react";
+
 import {
   Accordion,
   AccordionContent,
@@ -26,6 +28,15 @@ export function EditPageSection() {
   const location = useLocation();
   const pageData = location.state; 
   const navigate = useNavigate(); 
+  const individualPageManagement = (targetPage: string) => {
+    if (targetPage === "Offer Section") {
+      navigate('/offers');
+    }
+    if (targetPage === "Gallery Section") {
+      navigate('/gallery');
+    }
+    
+  }
   const [formContent, setFormContent] = useState<[]>([]);
   //  const [setOpenItem] = useState<string | null>(null);
   // const [openAddNewSection, setOpenAddNewSection] = useState(false);
@@ -40,7 +51,7 @@ export function EditPageSection() {
   const [deleteTarget, setDeleteTarget] = useState<PageItem | null>(null);
   const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
-    const page_size = 5; 
+    const page_size = 15; 
     const sort_by = "display_order";
     const sort_type = "asc";
   const { data: pageSections } = usePageSectionQuery({ page, page_size, sort_by, sort_type, search, slug: pageData.slug });
@@ -75,7 +86,7 @@ useEffect(() => {
       setIsNewSection(true);
     }
   }
-  
+  const individualPages = ['Offer Section', 'Gallery Section'];
   return (
     <section className="space-y-4">
       <div className="flex justify-between items-center">
@@ -117,17 +128,19 @@ useEffect(() => {
             return (<AccordionItem key={key} value={`item-${key}`} className="border rounded-md px-4">
               <AccordionTrigger>{typedSection.name}</AccordionTrigger>
               <AccordionContent>
-                <AccordionSection selectedSectionData={typedSection} />
+                {typedSection.title && (
+                  <AccordionSection selectedSectionData={typedSection} />
+                )}                
                 {typedSection.has_content && typedSection.content_contents && typedSection.content_contents.length > 0 ?
                   typedSection.content_contents.map((content, index) => (
                     <div className="space-y-4 mb-2" key={index}>
                       <h2 className="text-lg align-middle font-semibold bg-blue-500 text-white rounded-lg mt-3 p-4">{snackCaseToUpperCase(content.name ?? "")}</h2>
                       <AccordionSectionContent selectedSectionData={content} />
                     </div>
-                  )) : <h1>No Content Available</h1>
+                  )) : ""
                 }
-                {typedSection.has_list && (
-                  <div className="space-y-4 mt-5">
+                {typedSection.has_list && individualPages.includes(typedSection.name??"") ? <Button className="mt-4 bg-[#487eb0]" onClick={()=>individualPageManagement(typedSection.name??"")}>{typedSection.name} Management <Forward /></Button> : typedSection.has_list ? 
+                  (<div className="space-y-4 mt-5">
                     <div className="content-start items-center mb-4">
                       <h2 className="text-lg align-middle font-semibold bg-blue-500 text-white rounded-lg mt-3 p-4">List Content</h2>
                       <Button className="mt-4" variant="default" onClick={() => setMutationType("add")}>
@@ -135,9 +148,10 @@ useEffect(() => {
                         New Item
                       </Button>
                     </div>
-                    <AccordionSectionList key={accordionSectionContentKey} isNewSection={isNewSection} selectedSectionData={typedSection.list_contents} sectionId={typedSection.id} />
-                  </div>
-                )}
+                    <AccordionSectionList key={accordionSectionContentKey} hideElement={ typedSection.hide_element} sectionName={typedSection.name }  isNewSection={isNewSection} selectedSectionData={typedSection.list_contents} sectionId={typedSection.id} />
+                    
+                  </div>):""
+                }
               </AccordionContent>
             </AccordionItem>)
           })}

@@ -174,14 +174,28 @@ export function MainSidebar() {
               <SidebarMenu >
                    <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <SidebarNavItem to="/settings/pages" label="Pages" />
+                    <SidebarNavItem to="/pages" label="Pages" />
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
                <SidebarMenu >
                    <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <SidebarNavItem to="/settings/configs" label="Settings" />
+                    <SidebarNavItem to="/configs" label="Configs" />
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+              <SidebarMenu >
+                   <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <SidebarNavItem to="/offers" label="Offers" />
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+              <SidebarMenu >
+                   <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <SidebarNavItem to="/gallery" label="Gallery" />
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>

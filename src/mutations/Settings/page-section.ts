@@ -99,10 +99,7 @@ export const useCreateListContentMutation = () => {
       sub_title,
       link,
       img_src,
-      img_alt,
-      img_width,
-      img_height,
-      img_instruction,
+      img_alt,     
     }: PageSectionContent) => {
       return await authAxios.post("/settings/page-content", {
         id,
@@ -114,9 +111,7 @@ export const useCreateListContentMutation = () => {
         link,
         img_src,
         img_alt,
-        img_width,
-        img_height,
-        img_instruction,
+        
       });
     },
     onSuccess: () => {
@@ -136,10 +131,7 @@ export const useCreateListContentMutation = () => {
           sub_title: page.sub_title,
           link: page.link,
           img_src: page.img_src,
-          img_alt: page.img_alt,
-          img_width: page.img_width,
-          img_height: page.img_height,
-          img_instruction: page.img_instruction,
+          img_alt: page.img_alt,          
           content: page.content,
           page_id: page.page_id,
         });
